@@ -1,0 +1,21 @@
+{
+  "name": "student-attendance-chatbot",
+  "version": "1.0.0",
+  "description": "Chatbot to take student attendance.",
+  "main": "index.js",
+  "author": "Calvin C. Chan",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "d3-dsv": "2",
+    "dotenv": "^16.3.1",
+    "langchain": "^0.0.208"
+  },
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
