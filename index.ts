@@ -20,7 +20,7 @@ export default async function main(question: string) {
   1. firstname: string
   2. gender: M for male and F for female
   3. division: an integer from 1-10 indicating the homeroom of the student
-  4. lastname: string.
+  4. lastname: string
   Always respond in JSON format as an array of object {{"firstname": "string", "lastname": "string", gender: "string", divison: "integer"}}
   Student Table:
   {context}
@@ -41,7 +41,5 @@ export default async function main(question: string) {
   dotenv.config();
   await main(
     "List all the girls in division 10, ordered by name in alphabetical order."
-  ).finally(() => {
-    console.log("✨ Done");
-  });
+  );
 })();
