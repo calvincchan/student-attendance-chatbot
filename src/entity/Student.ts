@@ -5,6 +5,9 @@ export class Student {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ unique: true })
+  student_no: string;
+
   @Column()
   homeroom: string;
 
