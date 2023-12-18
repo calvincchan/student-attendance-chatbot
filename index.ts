@@ -16,14 +16,14 @@ export default async function main(question: string) {
   );
 
   const model = new OpenAI({ openAIApiKey: env.OPENAI_API_KEY });
-  const template = `Use the following student table to answer the question at the end. The student table has 4 columns:
+  const template = `Use the following student table to answer the question at the end. The student table has 5 columns:
   1. student_no: a unique 8-digital integer for each student
   2. homeroom: an integer from 1-10 indicating the homeroom of the student
   3. firstname: string
   4. lastname: string
   5. gender: M for male and F for female
   If you don't know the answer, please respond with "I don't know". Do not make up an answer.
-  Respond in JSON format as an array of object {{student_no: "integer", homeroom: "integer", "firstname": "string", "lastname": "string", gender: "string"}}
+  Respond in CSV format with the same 5 columns.
   Student Table:
   {context}
   Question: {question}
@@ -36,7 +36,7 @@ export default async function main(question: string) {
     query: question,
   });
   console.log("Answer:");
-  console.log(JSON.parse(res.text));
+  console.log(res.text);
 }
 
 (async () => {
