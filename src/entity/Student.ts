@@ -9,10 +9,10 @@ export class Student {
   homeroom: string;
 
   @Column()
-  firstName: string;
+  firstname: string;
 
   @Column()
-  lastName: string;
+  lastname: string;
 
   @Column()
   gender: string;
