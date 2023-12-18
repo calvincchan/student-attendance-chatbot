@@ -1,45 +1,104 @@
-import dotenv from "dotenv";
-import { RetrievalQAChain } from "langchain/chains";
-import { CSVLoader } from "langchain/document_loaders/fs/csv";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { OpenAI } from "langchain/llms/openai";
+import * as dotenv from "dotenv";
+import { ChatOpenAI } from "langchain/chat_models/openai";
 import { PromptTemplate } from "langchain/prompts";
-import { MemoryVectorStore } from "langchain/vectorstores/memory";
+import { StringOutputParser } from "langchain/schema/output_parser";
+import { RunnableSequence } from "langchain/schema/runnable";
+import { SqlDatabase } from "langchain/sql_db";
+import { DataSource } from "typeorm";
 
 export default async function main(question: string) {
   const env = process.env;
-  const loader = new CSVLoader("students.csv");
-  const docs = await loader.loadAndSplit();
-  const store = await MemoryVectorStore.fromDocuments(
-    docs,
-    new OpenAIEmbeddings({ openAIApiKey: env.OPENAI_API_KEY })
-  );
 
-  const model = new OpenAI({ openAIApiKey: env.OPENAI_API_KEY });
-  const template = `Use the following student table to answer the question at the end. The student table has 5 columns:
-  1. student_no: a unique 8-digital integer for each student
-  2. homeroom: an integer from 1-10 indicating the homeroom of the student
-  3. firstname: string
-  4. lastname: string
-  5. gender: M for male and F for female
-  If you don't know the answer, please respond with "I don't know". Do not make up an answer.
-  Respond in CSV format with the same 5 columns.
-  Student Table:
-  {context}
-  Question: {question}
-  Answer:`;
-  const chain = RetrievalQAChain.fromLLM(model, store.asRetriever(), {
-    prompt: PromptTemplate.fromTemplate(template),
+  const datasource = new DataSource({
+    type: "sqlite",
+    database: "database.db",
   });
 
-  const res = await chain.call({
-    query: question,
+  const db = await SqlDatabase.fromDataSourceParams({
+    appDataSource: datasource,
   });
-  console.log("Answer:");
-  console.log(res.text);
+
+  const llm = new ChatOpenAI();
+
+  /**
+   * Create the first prompt template used for getting the SQL query.
+   */
+  // const prompt = SQL_SQLITE_PROMPT;
+  const prompt =
+    PromptTemplate.fromTemplate(`Based on the provided SQL table schema below, write a SQL query that would answer the user's question.
+------------
+SCHEMA: {schema}
+------------
+QUESTION: {question}
+------------
+SQL QUERY:`);
+
+  /**
+   * Create a new RunnableSequence where we pipe the output from `db.getTableInfo()`
+   * and the users question, into the prompt template, and then into the llm.
+   * We're also applying a stop condition to the llm, so that it stops when it
+   * sees the `\nSQLResult:` token.
+   */
+  const sqlQueryChain = RunnableSequence.from([
+    {
+      schema: async () => db.getTableInfo(),
+      question: (input: { question: string }) => input.question,
+    },
+    prompt,
+    llm.bind({ stop: ["\nSQLResult:"] }),
+    new StringOutputParser(),
+  ]);
+
+  const res = await sqlQueryChain.invoke({
+    question: "How many students are there?",
+  });
+  console.log({ res });
+
+  /**
+   * Create the final prompt template which is tasked with getting the natural language response.
+   */
+  const finalResponsePrompt =
+    PromptTemplate.fromTemplate(`Based on the table schema below, question, SQL query, and SQL response, write a natural language response:
+------------
+SCHEMA: {schema}
+------------
+QUESTION: {question}
+------------
+SQL QUERY: {query}
+------------
+SQL RESPONSE: {response}
+------------
+NATURAL LANGUAGE RESPONSE:`);
+
+  /**
+   * Create a new RunnableSequence where we pipe the output from the previous chain, the users question,
+   * and the SQL query, into the prompt template, and then into the llm.
+   * Using the result from the `sqlQueryChain` we can run the SQL query via `db.run(input.query)`.
+   */
+  const finalChain = RunnableSequence.from([
+    {
+      question: (input) => input.question,
+      query: sqlQueryChain,
+    },
+    {
+      schema: async () => db.getTableInfo(),
+      question: (input) => input.question,
+      query: (input) => input.query,
+      response: (input) => db.run(input.query),
+    },
+    finalResponsePrompt,
+    llm,
+    new StringOutputParser(),
+  ]);
+
+  const finalResponse = await finalChain.invoke({ question });
+
+  console.log({ finalResponse });
 }
 
 (async () => {
   dotenv.config();
-  await main("List all the female students in homeroom 7.");
+  await main(
+    "List all the female students in homeroom 7 in ordered list format, with full name and student number."
+  );
 })();
