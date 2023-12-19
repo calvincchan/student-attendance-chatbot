@@ -23,7 +23,6 @@ export default async function main(question: string) {
   /**
    * Create the first prompt template used for getting the SQL query.
    */
-  // const prompt = SQL_SQLITE_PROMPT;
   const prompt =
     PromptTemplate.fromTemplate(`Based on the provided SQL table schema below, write a SQL query that would answer the user's question.
 ------------
@@ -49,10 +48,10 @@ SQL QUERY:`);
     new StringOutputParser(),
   ]);
 
-  const res = await sqlQueryChain.invoke({
-    question: "How many students are there?",
-  });
-  console.log({ res });
+  // const res = await sqlQueryChain.invoke({
+  //   question: "How many students are there?",
+  // });
+  // console.log({ res });
 
   /**
    * Create the final prompt template which is tasked with getting the natural language response.
@@ -99,6 +98,6 @@ NATURAL LANGUAGE RESPONSE:`);
 (async () => {
   dotenv.config();
   await main(
-    "List all the female students in homeroom 7 in ordered list format, with full name and student number."
+    "List all the female students in homeroom 7 in ordered list format, with last name, first name and student number."
   );
 })();
