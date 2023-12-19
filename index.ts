@@ -4,18 +4,13 @@ import { PromptTemplate } from "langchain/prompts";
 import { StringOutputParser } from "langchain/schema/output_parser";
 import { RunnableSequence } from "langchain/schema/runnable";
 import { SqlDatabase } from "langchain/sql_db";
-import { DataSource } from "typeorm";
+import { AppDataSource } from "./src/data-source";
 
 export default async function main(question: string) {
   const env = process.env;
 
-  const datasource = new DataSource({
-    type: "sqlite",
-    database: "database.db",
-  });
-
   const db = await SqlDatabase.fromDataSourceParams({
-    appDataSource: datasource,
+    appDataSource: AppDataSource,
   });
 
   const llm = new ChatOpenAI();
@@ -24,7 +19,8 @@ export default async function main(question: string) {
    * Create the first prompt template used for getting the SQL query.
    */
   const prompt =
-    PromptTemplate.fromTemplate(`Based on the provided SQL table schema below, write a SQL query that would answer the user's question.
+    PromptTemplate.fromTemplate(`Based on the provided SQL table schema below, write a SQL query in SQLite dialect that would answer the user's question.
+Use upsert syntax to insert or update the attendance record for the student. Never modify the student table. Always use absolute date.
 ------------
 SCHEMA: {schema}
 ------------
@@ -48,16 +44,14 @@ SQL QUERY:`);
     new StringOutputParser(),
   ]);
 
-  // const res = await sqlQueryChain.invoke({
-  //   question: "How many students are there?",
-  // });
-  // console.log({ res });
+  const res = await sqlQueryChain.invoke({ question });
+  console.log({ res });
 
   /**
    * Create the final prompt template which is tasked with getting the natural language response.
    */
   const finalResponsePrompt =
-    PromptTemplate.fromTemplate(`Based on the table schema below, question, SQL query, and SQL response, write a natural language response:
+    PromptTemplate.fromTemplate(`Based on the SQL table schema below, question, SQL query, and SQL response, write a natural language response:
 ------------
 SCHEMA: {schema}
 ------------
@@ -97,7 +91,5 @@ NATURAL LANGUAGE RESPONSE:`);
 
 (async () => {
   dotenv.config();
-  await main(
-    "List all the female students in homeroom 7 in ordered list format, with last name, first name and student number."
-  );
+  await main("All students in homeroom 7 as present on Dec 10 2023.");
 })();
