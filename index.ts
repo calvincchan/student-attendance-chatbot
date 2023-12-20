@@ -4,11 +4,10 @@ import { PromptTemplate } from "langchain/prompts";
 import { StringOutputParser } from "langchain/schema/output_parser";
 import { RunnableSequence } from "langchain/schema/runnable";
 import { SqlDatabase } from "langchain/sql_db";
+import * as readline from "readline";
 import { AppDataSource } from "./src/data-source";
 
 export default async function main(question: string) {
-  const env = process.env;
-
   const db = await SqlDatabase.fromDataSourceParams({
     appDataSource: AppDataSource,
   });
@@ -87,6 +86,21 @@ NATURAL LANGUAGE RESPONSE:`);
   const finalResponse = await finalChain.invoke({ question });
 
   console.log({ finalResponse });
+
+  /**
+   * Create a prompt user interface that allows us to interact with the final chain.
+   */
+  const userInterface = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  userInterface.prompt();
+  userInterface.on("line", async (line) => {
+    const response = await finalChain.invoke({ question: line });
+    console.log({ response });
+    userInterface.prompt();
+  });
 }
 
 (async () => {
