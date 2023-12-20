@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Chatbot to take student attendance.",
   "main": "index.js",
-  "author": "Calvin C. Chan",
+  "author": "Calvin C. Chan <hello@calvinchan.com>",
   "license": "MIT",
   "private": false,
   "dependencies": {
