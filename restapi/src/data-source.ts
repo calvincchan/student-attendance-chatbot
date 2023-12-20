@@ -5,7 +5,7 @@ import { Student } from "./entity/Student";
 
 export const AppDataSource = new DataSource({
   type: "sqlite",
-  database: "database.db",
+  database: ":memory:",
   synchronize: true,
   logging: false,
   entities: [Student, Attendance],

@@ -5,7 +5,7 @@ import { StringOutputParser } from "langchain/schema/output_parser";
 import { RunnableSequence } from "langchain/schema/runnable";
 import { SqlDatabase } from "langchain/sql_db";
 import * as readline from "readline";
-import { AppDataSource } from "./src/data-source";
+import { AppDataSource } from "./restapi/src/data-source";
 
 export default async function main(question: string) {
   const db = await SqlDatabase.fromDataSourceParams({
