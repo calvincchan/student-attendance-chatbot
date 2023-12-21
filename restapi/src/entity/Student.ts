@@ -1,12 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class Student {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ unique: true })
-  student_no: string;
+  @PrimaryColumn()
+  id: string;
 
   @Column()
   homeroom: string;

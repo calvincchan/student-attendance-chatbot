@@ -14,7 +14,7 @@ export async function SeedData() {
 
   for (const record of records) {
     const student = new Student();
-    student.student_no = record.student_no;
+    student.id = record.student_no;
     student.homeroom = record.homeroom;
     student.firstname = record.firstname;
     student.lastname = record.lastname;
