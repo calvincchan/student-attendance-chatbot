@@ -1,11 +1,12 @@
 import { FastifyPluginAsync } from "fastify";
-import { FindOptionsOrder, FindOptionsWhere } from "typeorm";
 import { AppDataSource } from "./data-source";
 import { Student } from "./entity/Student";
 
 interface ListQuerystring {
-  where?: string;
-  order?: string;
+  homeroom?: string;
+  firstname?: string;
+  lastname?: string;
+  gender?: string;
 }
 
 const StudentSchema = {
@@ -24,12 +25,25 @@ export const StudentHandler: FastifyPluginAsync = async function (app) {
     "/",
     {
       schema: {
-        operationId: "listStudents",
-        description: "Get a list of student",
+        operationId: "listStudent",
+        description: "Get a list of student with optional filter and order",
         tags: ["Student"],
         querystring: {
-          where: {
-            description: "JSON string that conform to typeorm FindOptionsWhere",
+          homeroom: {
+            description: "Filter by homeroom",
+            type: "string",
+          },
+          firstname: {
+            description: "Filter by firstname",
+            type: "string",
+          },
+          lastname: {
+            description: "Filter by lastname",
+            type: "string",
+          },
+          gender: {
+            description: "filter by gender: M or F",
+            type: "string",
           },
         },
         response: {
@@ -41,12 +55,13 @@ export const StudentHandler: FastifyPluginAsync = async function (app) {
       },
     },
     async (req, reply) => {
-      const where: FindOptionsWhere<Student> | FindOptionsWhere<Student>[] =
-        JSON.parse(req.query.where || "{}");
-      const order: FindOptionsOrder<Student> = JSON.parse(
-        req.query.order || "{}"
-      );
-      const rows = await AppDataSource.manager.find(Student, { where, order });
+      const where: ListQuerystring = {
+        homeroom: req.query.homeroom,
+        firstname: req.query.firstname,
+        lastname: req.query.lastname,
+        gender: req.query.gender,
+      };
+      const rows = await AppDataSource.manager.find(Student, { where });
       reply.send(rows);
     }
   );
