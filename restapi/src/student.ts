@@ -8,18 +8,34 @@ interface ListQuerystring {
   order?: string;
 }
 
+const StudentSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string" },
+    homeroom: { type: "string" },
+    firstname: { type: "string" },
+    lastname: { type: "string" },
+    gender: { type: "string" },
+  },
+};
+
 export const StudentHandler: FastifyPluginAsync = async function (app) {
   app.get<{ Querystring: ListQuerystring }>(
     "/",
     {
       schema: {
+        operationId: "listStudents",
         description: "Get a list of student",
         tags: ["Student"],
         querystring: {
-          type: "object",
-          properties: {
-            filters: { type: "string" },
-            order: { type: "string" },
+          where: {
+            description: "JSON string that conform to typeorm FindOptionsWhere",
+          },
+        },
+        response: {
+          200: {
+            type: "array",
+            items: StudentSchema,
           },
         },
       },
@@ -39,6 +55,7 @@ export const StudentHandler: FastifyPluginAsync = async function (app) {
     "/:id",
     {
       schema: {
+        operationId: "getStudentById",
         description: "Get a student by id",
         tags: ["Student"],
         params: {
@@ -46,6 +63,9 @@ export const StudentHandler: FastifyPluginAsync = async function (app) {
           properties: {
             id: { type: "string" },
           },
+        },
+        response: {
+          200: StudentSchema,
         },
       },
     },
