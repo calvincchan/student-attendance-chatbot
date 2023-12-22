@@ -22,5 +22,5 @@ export async function SeedData() {
     await AppDataSource.manager.save(student);
   }
 
-  console.log("Loaded students: ", records);
+  // console.log("Loaded students: ", records);
 }
