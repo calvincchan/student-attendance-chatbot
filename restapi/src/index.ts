@@ -1,6 +1,7 @@
 import fastifySwagger from "@fastify/swagger";
 import "dotenv/config";
 import fastify from "fastify";
+import { AttendanceHandler } from "./attendance";
 import { SeedData } from "./seed-data";
 import { StudentHandler } from "./student";
 
@@ -42,11 +43,13 @@ async function main() {
     }
   );
 
+  /** Add routes */
   await server.register(StudentHandler, { prefix: "/students" });
+  await server.register(AttendanceHandler, { prefix: "/attendances" });
 
+  /** Prepare to launch */
   await server.ready();
   doc = server.swagger({ yaml: true });
-  console.log("🚀 ~ file: index.ts:37 ~ main ~ doc:", doc);
 
   server.listen({ host, port }, (err, address) => {
     if (err) {

@@ -1,4 +1,4 @@
-student_no,homeroom,firstname,lastname,gender
+id,homeroom,firstname,lastname,gender
 10001,1,Mia,Chen,F
 10002,2,Ahmed,Khan,M
 10003,3,Sofia,Rodriguez,F
