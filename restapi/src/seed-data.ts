@@ -20,8 +20,7 @@ export async function SeedData() {
     const student = new Student();
     student.id = record.id;
     student.homeroom = record.homeroom;
-    student.firstname = record.firstname;
-    student.lastname = record.lastname;
+    student.name = [record.firstname, record.lastname].join(" ");
     student.gender = record.gender;
     await AppDataSource.manager.save(student);
   }

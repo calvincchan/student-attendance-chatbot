@@ -3,10 +3,8 @@ import { AppDataSource } from "./data-source";
 import { Student } from "./entity/Student";
 
 interface ListQuerystring {
-  homeroom?: string;
-  firstname?: string;
-  lastname?: string;
-  gender?: string;
+  homeroom: string;
+  name: string;
 }
 
 const StudentSchema = {
@@ -14,8 +12,7 @@ const StudentSchema = {
   properties: {
     id: { type: "string" },
     homeroom: { type: "string" },
-    firstname: { type: "string" },
-    lastname: { type: "string" },
+    name: { type: "string" },
     gender: { type: "string" },
   },
 };
@@ -26,19 +23,15 @@ export const StudentHandler: FastifyPluginAsync = async function (app) {
     {
       schema: {
         operationId: "listStudent",
-        description: "Get a list of student with optional filter and order",
+        description: "Get a list of student with optional filters",
         tags: ["Student"],
         querystring: {
           homeroom: {
             description: "Filter by homeroom",
             type: "string",
           },
-          firstname: {
-            description: "Filter by firstname",
-            type: "string",
-          },
-          lastname: {
-            description: "Filter by lastname",
+          name: {
+            description: "Filter by student name",
             type: "string",
           },
           gender: {
@@ -55,13 +48,16 @@ export const StudentHandler: FastifyPluginAsync = async function (app) {
       },
     },
     async (req, reply) => {
-      const where: ListQuerystring = {
-        homeroom: req.query.homeroom,
-        firstname: req.query.firstname,
-        lastname: req.query.lastname,
-        gender: req.query.gender,
-      };
-      const rows = await AppDataSource.manager.find(Student, { where });
+      const filters = req.query;
+      const Students = AppDataSource.getRepository(Student);
+      const query = Students.createQueryBuilder();
+      if (filters.homeroom) {
+        query.andWhere("homeroom = :homeroom", { homeroom: filters.homeroom });
+      }
+      if (filters.name) {
+        query.andWhere("name LIKE :name", { name: `%${filters.name}%` });
+      }
+      const rows = await query.getMany();
       reply.send(rows);
     }
   );
