@@ -7,9 +7,11 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
-    "axios": "^1.6.2",
+    "dayjs": "^1.11.10",
     "dotenv": "^16.3.1",
-    "langchain": "^0.0.211"
+    "langchain": "^0.0.212",
+    "zod": "^3.22.4",
+    "zod-to-json-schema": "^3.22.3"
   },
   "scripts": {
     "start": "ts-node index.ts",

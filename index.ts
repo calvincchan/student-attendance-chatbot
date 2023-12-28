@@ -1,68 +1,137 @@
+import * as dayjs from "dayjs";
 import "dotenv/config";
-import { LLMChain } from "langchain/chains";
-import { OpenAI } from "langchain/llms/openai";
-import { PromptTemplate } from "langchain/prompts";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { BaseMessage, FunctionMessage } from "langchain/dist/schema";
+import { OpenAI } from "openai";
+import * as readline from "readline";
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
-export default async function main(question: string) {
-  const prompt = PromptTemplate.fromTemplate(
-    `Task: Record Daily Student Attendance
-----------
-Description: You interact with a system that records daily student attendance with function calls.
-----------
-Functions:
-1. func: "getStudents", args: {{homeroom?: string, isPresent?: boolean}}
-2. func: "getStudent", args: {{studentId: string}}
-3. func: "findStudent", args: {{name: string}}
-5. func: "setAttendance", args: {{studentId: string, name?: string, date: string, isPresent: boolean, reason?: string}}
-6. func: "setAllPresentByHomeroom", args: {{homeroom: string, date: string}}
-7. func: "unsetAttendance", args: {{studentId: string, date: string}}
-8. func: "getAttendance", args: {{studentId: string, date: string}}
-9. func: "getAttendances", args: {{homeroom?: string, isPresent?: boolean, fromDate?: string, toDate?: string}}
-----------
-Example:
-1. Query: mark all students in homeroom 4 as present on 2023-12-23, except for Emily who has fever:
-   func: "setAllPresentByHomeroom", args: {{homeroom: "4", date: "2023-12-23"}}
-   func: "setAttendance", args: {{name: "Emily", date: "2023-12-23", isPresent: false, reason: "fever"}}
-2. Query: Tom is sick today. The rest of the class is present.
-   func: "setAllPresentByHomeroom", args: {{homeroom: "4", date: "2023-12-23"}}
-   func: "setAttendance", args: {{name: "Tom", "2023-12-23", false, "sick"}}
-3. Query: Who was absent in homeroom 7 last week?
-   func: "getAttendances", args: {{homeroom: "7", isPresent: false, fromDate: "2023-12-16", toDate: "2023-12-22"}}
-----------
-Your response must be in JSON format that describes function calls based on user requests. Example:
-[{{
-  func: "setAllPresentByHomeroom",
-  args: {{homeroom: "1", date: "2023-12-23"}}
-}},{{
-  func: "unsetAttendance",
-  args: {{studentId: "1001", date: "2023-12-23"}}
-}},{{
-  func: "setAttendance",
-  args: {{name: "John", date: "2023-12-23", isPresent: false, reason: "sick"}}
-}}]
-----------
-Question: {question}
-`
+interface IStudent {
+  id: string;
+  homeroom: string;
+  name: string;
+}
+
+interface IAttendance {
+  date: string;
+  student_id: string;
+  present: boolean;
+  reason?: string;
+}
+
+const toolSchema: OpenAI.ChatCompletionTool[] = [
+  {
+    type: "function",
+    function: {
+      name: "findStudents",
+      description: "Get a list of students with optional filters",
+      parameters: zodToJsonSchema(
+        z.object({
+          homeroom: z.string().optional().describe("Filter by homeroom"),
+          isPresent: z
+            .boolean()
+            .optional()
+            .describe("Filter by present status"),
+          studentId: z.string().optional().describe("Filter by student ID"),
+        })
+      ),
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "setAllPresentByHomeroom",
+      description: "Mark all students in a homeroom as present",
+      parameters: zodToJsonSchema(
+        z.object({
+          homeroom: z.string().describe("Homeroom"),
+          date: z.string().describe("Date"),
+        })
+      ),
+    },
+  },
+];
+
+/** Get a list of students with optional filters */
+async function findStudents(
+  homeroom: string = "1",
+  isPresent?: boolean
+): Promise<IStudent[]> {
+  return [
+    { id: "1001", homeroom, name: "John" },
+    { id: "1002", homeroom, name: "Tom" },
+    { id: "1003", homeroom, name: "Emily" },
+  ];
+}
+
+async function setAllPresentByHomeroom(homeroom: string, date: string) {
+  console.log(
+    `Mark all students in homeroom ${homeroom} as present on ${date}`
   );
+}
 
-  const llm = new OpenAI({ temperature: 0 });
+async function processResponse(response: BaseMessage) {
+  const functionResponse = response as FunctionMessage;
+  console.log("🔥", functionResponse);
+  if (response.content) {
+    console.log("✨", response.content);
+    return;
+  }
+}
 
-  const formatChain = new LLMChain({
-    llm,
-    prompt,
+export default async function main() {
+  const defaultHomeroom = "1";
+  const defaultDate = dayjs().format("YYYY-MM-DD");
+  const defaultTeacherName = "Mr. Smith";
+
+  const model = new ChatOpenAI({
+    modelName: "gpt-3.5-turbo",
+    temperature: 0,
+  }).bind({
+    tools: toolSchema,
+    tool_choice: "auto",
   });
 
-  console.log("Question:", question);
+  // const chain = new LLMChain({
+  //   llm: model,
+  //   prompt,
+  // });
 
-  const result = await formatChain.invoke({
-    question,
+  // /** Init API request */
+  // const result = await chain.call({
+  //   homeroom: defaultHomeroom,
+  //   date: defaultDate,
+  //   text: `Please mark all students in my class as present today.`,
+  // });
+  const result = await model.invoke([
+    [
+      "system",
+      `You are a helpful assistance that help a human teacher to interact with a student attendance management system with function calls. Use the following context to help you understand the conversation. Address the human user as ${defaultTeacherName}.
+    ----------
+    Teacher homeroom: ${defaultHomeroom}
+    Today's date: ${defaultDate}
+    `,
+    ],
+    ["human", `Hello, What's my name and today's date?`],
+  ]);
+  console.log(JSON.stringify(result, null, 2));
+
+  /**
+   * Create an interactive prompt user interface.
+   */
+  const userInterface = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
   });
-
-  console.log(result.text);
+  userInterface.prompt();
+  userInterface.on("line", async (text) => {
+    const response = await model.invoke(["human", text]);
+    await processResponse(response);
+    userInterface.prompt();
+  });
 }
 
 (async () => {
-  await main(
-    `Mark all students in homeroom 1 as present on 2023-12-23, except for John who is sick`
-  );
+  await main();
 })();
