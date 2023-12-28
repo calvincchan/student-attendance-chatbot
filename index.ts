@@ -13,7 +13,7 @@ import {
 
 /** Process response from OpenAI, either print the response or call a tool. */
 async function processResponse(response: BaseMessage) {
-  console.log(JSON.stringify(response, null, 2));
+  // console.log(JSON.stringify(response, null, 2));
   if (response.content) {
     console.log("✨", response.content);
     return;
@@ -22,10 +22,6 @@ async function processResponse(response: BaseMessage) {
     const toolCalls = response.additional_kwargs.tool_calls;
     for (const toolCall of toolCalls) {
       const { function: func } = toolCall;
-      console.log(
-        "🚀 ~ file: index.ts:89 ~ processResponse ~ toolCall:",
-        toolCall
-      );
       const args = JSON.parse(func.arguments);
       if (func.name === "findAttendance") {
         await findAttendance(args);
@@ -60,27 +56,28 @@ export default async function main() {
 
   /** Init message with context. */
   const initSystemMessage = new SystemMessage(
-    `The following is a friendly conversation between a human teacher and an AI. The AI helps the teacher to manage student attendance via function calls.
+    `The following is a friendly conversation between a human and an AI. The AI helps the human to manage student attendance via function calls.
     --------
     Context:
-    - Address the human user as ${defaultTeacherName}.
+    - Address the human as ${defaultTeacherName}.
     - Homeroom is always an integer between 1 and 7.
     - If not specified, the default homeroom is ${defaultHomeroom}.
     - Today's date is ${defaultDate}.
     - If the AI does not know the answer to a question, it truthfully says it does not know.
+    - If human asked for help with examples, please use the human message in the following examples.
     --------
     Examples:
-    - Teacher: Mark all students as present, except for John who has fever.
+    - Human: Mark all students as present, except for John who has fever.
       1. function name: "setAllPresentByHomeroom", args: {{homeroom: "${defaultHomeroom}", date: "${defaultDate}"}}
       2. function name: "setAttendance", args: {{name: "John", homeroom: "${defaultHomeroom}", date: "${defaultDate}", present: false, reason: "fever"}}
-    - Teacher: Tom is sick today. The rest of the class is present.
+    - Human: Tom is sick today. The rest of the class is present.
       1. function name: "setAllPresentByHomeroom", args: {{homeroom: "${defaultHomeroom}", date: "${defaultDate}"}}
       2. function name: "setAttendance", args: {{name: "Tom", homeroom: "${defaultHomeroom}", date: "${defaultDate}", present: false, reason: "sick"}}
-    - Teacher: Show attendance for Lily.
+    - Human: Show attendance for Lily.
       function name: "findAttendance", args: {{name: "Lily Garcia", homeroom: "${defaultHomeroom}"}}
-    - Teacher: Mia is sick today.
+    - Human: Mia is sick today.
       function name: "setAttendance", args: {{name: "Mia", homeroom: "${defaultHomeroom}", date: "${defaultDate}", present: false, reason: "sick"}}
-    - Teacher: Who was absent last week?
+    - Human: Who was absent last week?
       function name: "findAttendance", args: {{homeroom: "${defaultHomeroom}", present: false, fromDate: "${dayjs(
       defaultDate
     )

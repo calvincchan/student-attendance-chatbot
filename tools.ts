@@ -135,7 +135,7 @@ export async function findAttendance(args: {
     "Student",
     "student.id = attendance.student_id"
   );
-  console.log(query.getQueryAndParameters());
+  // console.log(query.getQueryAndParameters());
   const rows = await query.getRawMany();
   const headers = [
     "Student_id",
@@ -186,7 +186,7 @@ export async function setAttendance(args: {
   VALUES (:studentId, :date, :present, :reason);`,
     [student.id, date, present, reason]
   );
-  console.log("🚀 ~ file: tools.ts:176 ~ res:", res);
+  // console.log("🚀 ~ file: tools.ts:176 ~ res:", res);
   console.log(
     `Set attendance for student ${student.id} on ${date} to ${present} with reason ${reason}`
   );
