@@ -6,8 +6,8 @@ import { AppDataSource } from "./data-source";
 import { Attendance } from "./entity/Attendance";
 import { Student } from "./entity/Student";
 
-/** Load seed data */
-export async function SeedData() {
+/** Load seed data to database. */
+export async function seedData() {
   await AppDataSource.initialize();
 
   /** Loading students into the database */
