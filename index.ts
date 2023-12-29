@@ -85,6 +85,7 @@ export default async function main() {
       .format("YYYY-MM-DD")}", toDate: "${defaultDate}"}}
     `
   );
+  console.log(`Enter "exit" to exit the program.`);
   const result = await model.invoke([
     initSystemMessage,
     new HumanMessage(`Hello, What's the default homeroom and today's date?`),
@@ -99,14 +100,23 @@ export default async function main() {
     output: process.stdout,
   });
   userInterface.prompt();
-  userInterface.on("line", async (text) => {
-    const response = await model.invoke([
-      initSystemMessage,
-      new HumanMessage(text),
-    ]);
-    await processResponse(response);
-    userInterface.prompt();
-  });
+  userInterface
+    .on("line", async (text) => {
+      if (text === "exit") {
+        userInterface.close();
+        return;
+      }
+      const response = await model.invoke([
+        initSystemMessage,
+        new HumanMessage(text),
+      ]);
+      await processResponse(response);
+      userInterface.prompt();
+    })
+    .on("close", () => {
+      console.log("Bye!");
+      process.exit(0);
+    });
 }
 
 (async () => {
