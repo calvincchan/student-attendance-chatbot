@@ -140,10 +140,10 @@ export async function findAttendance(args: {
   const headers = [
     "Student_id",
     "Student_name",
-    "Student_homeroom",
     "Attendance_date",
     "Attendance_present",
     "Attendance_reason",
+    "Student_homeroom",
   ];
   /** for each row, display the columns in the order of headers */
   if (rows.length > 0) {
