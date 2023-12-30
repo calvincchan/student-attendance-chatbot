@@ -146,9 +146,7 @@ export async function findAttendance(args: {
     "Attendance_reason",
   ];
   /** for each row, display the columns in the order of headers */
-  rows.map((row) =>
-    console.log(headers.map((header) => row[header]).join("\t"))
-  );
+  console.table(rows, headers);
 }
 
 /** Set multiple attendance records as present. */
