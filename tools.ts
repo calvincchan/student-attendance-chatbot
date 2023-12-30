@@ -11,12 +11,12 @@ export const ToolSchema: OpenAI.ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "findAttendance",
-      description: "Get a list of attendance with optional filters",
+      description: "Get a list of attendance with filters",
       parameters: zodToJsonSchema(
         z.object({
+          homeroom: z.string().describe("Filter by homeroom, required"),
           studentId: z.string().optional().describe("Filter by student ID"),
           studentName: z.string().optional().describe("Filter by student name"),
-          homeroom: z.string().describe("Filter by homeroom"),
           present: z.boolean().optional().describe("Filter by present status"),
           date: z
             .string()
@@ -114,11 +114,11 @@ export async function findAttendance(args: {
       });
     }
   }
-  // if (args.homeroom) {
-  //   query.andWhere("attendance.homeroom = :homeroom", {
-  //     homeroom: args.homeroom,
-  //   });
-  // }
+  if (args.homeroom) {
+    query.andWhere("attendance.homeroom = :homeroom", {
+      homeroom: args.homeroom,
+    });
+  }
   if (args.present !== undefined) {
     query.andWhere("attendance.present = :present", { present: args.present });
   }
@@ -146,7 +146,11 @@ export async function findAttendance(args: {
     "Attendance_reason",
   ];
   /** for each row, display the columns in the order of headers */
-  console.table(rows, headers);
+  if (rows.length > 0) {
+    console.table(rows, headers);
+  } else {
+    console.log("No attendance records found.");
+  }
 }
 
 /** Set multiple attendance records as present. */
@@ -156,8 +160,8 @@ export async function setAllPresentByHomeroom(args: {
 }) {
   const { homeroom, date } = args;
   const res = await AppDataSource.manager.query(
-    `INSERT OR REPLACE INTO attendance (student_id, date, present)
-  SELECT student.id, :date, true
+    `INSERT OR REPLACE INTO attendance (student_id, date, homeroom, present)
+  SELECT student.id, :date, student.homeroom, true
   FROM student
   WHERE student.homeroom = :homeroom;`,
     [date, homeroom]
@@ -167,6 +171,7 @@ export async function setAllPresentByHomeroom(args: {
   );
 }
 
+/** Set a single attendance record */
 export async function setAttendance(args: {
   name: string;
   homeroom: string;
@@ -180,9 +185,9 @@ export async function setAttendance(args: {
     return;
   }
   const res = await AppDataSource.manager.query(
-    `INSERT OR REPLACE INTO attendance (student_id, date, present, reason)
-  VALUES (:studentId, :date, :present, :reason);`,
-    [student.id, date, present, reason]
+    `INSERT OR REPLACE INTO attendance (student_id, date, homeroom, present, reason)
+  VALUES (:studentId, :date, :homeroom, :present, :reason);`,
+    [student.id, date, student.homeroom, present, reason]
   );
   // console.log("🚀 ~ file: tools.ts:176 ~ res:", res);
   console.log(
