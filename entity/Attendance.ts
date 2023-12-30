@@ -8,6 +8,9 @@ export class Attendance {
   @PrimaryColumn() // This creates a compound primary key on "date" and "student_id"
   student_id: string; // Reference ID from Student table
 
+  @Column({ type: "text" })
+  homeroom: string;
+
   @Column({ type: "boolean" })
   present: boolean;
 

@@ -34,6 +34,7 @@ export async function seedData() {
     const attendance = new Attendance();
     attendance.date = dayjs(record.date).startOf("day").toDate();
     attendance.student_id = record.student_id;
+    attendance.homeroom = record.homeroom;
     attendance.present = Boolean(record.present === "Y");
     attendance.reason = record.reason;
     await AppDataSource.manager.save(attendance);
