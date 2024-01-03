@@ -32,20 +32,23 @@ async function processResponse(response: BaseMessage) {
       finalResultDate = args.date;
       finalResultHomeRoom = args.homeroom;
       if (func.name === "findAttendance") {
-        await findAttendance(args);
+        result.push(await findAttendance(args));
         shouldShowFinalResult = false;
       } else if (func.name === "setAllPresentByHomeroom") {
-        await setAllPresentByHomeroom(args);
+        result.push(await setAllPresentByHomeroom(args));
       } else if (func.name === "setAttendance") {
-        await setAttendance(args);
+        result.push(await setAttendance(args));
       }
     }
     if (shouldShowFinalResult) {
-      await findAttendance({
-        homeroom: finalResultHomeRoom,
-        date: finalResultDate,
-      });
+      result.push(
+        await findAttendance({
+          homeroom: finalResultHomeRoom,
+          date: finalResultDate,
+        })
+      );
     }
+    return result;
   }
 }
 

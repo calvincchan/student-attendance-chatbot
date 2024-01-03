@@ -19,7 +19,7 @@
     "zod-to-json-schema": "^3.22.3"
   },
   "scripts": {
-    "start": "ts-node index.ts",
+    "start": "ts-node src/index.ts",
     "typeorm": "typeorm-ts-node-commonjs"
   },
   "devDependencies": {

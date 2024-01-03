@@ -8,5 +8,13 @@ Content-Type: application/json
   "text": "everyone is here today"
 }
 
+### Chat
+POST {{BASE_URL}}/chat
+Content-Type: application/json
+
+{
+  "text": "show records last month"
+}
+
 ### Status
 GET {{BASE_URL}}/
