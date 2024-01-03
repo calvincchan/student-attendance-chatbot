@@ -1,8 +1,8 @@
+import cors from "@fastify/cors";
 import * as dayjs from "dayjs";
 import "dotenv/config";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { BaseMessage, HumanMessage, SystemMessage } from "langchain/schema";
-import * as readline from "readline";
 import { seedData } from "./seed-data";
 import {
   ToolSchema,
@@ -10,10 +10,12 @@ import {
   setAllPresentByHomeroom,
   setAttendance,
 } from "./tools";
+import fastify = require("fastify");
 
 /** Process response from OpenAI, either print the response or call a tool. */
 async function processResponse(response: BaseMessage) {
   // console.log(JSON.stringify(response, null, 2));
+  const result: string[] = [];
   if (response.content) {
     console.log("✨", response.content);
     return;
@@ -77,38 +79,34 @@ export default async function main() {
     - If the AI does not know the answer to a question, it truthfully says it does not know.
     `
   );
-  console.log(`Enter "exit" to exit the program.`);
-  const result = await model.invoke([
-    initSystemMessage,
-    new HumanMessage(`Hello, What's the default homeroom and today's date?`),
-  ]);
-  processResponse(result);
 
-  /**
-   * Start an interactive prompt user interface.
-   */
-  const userInterface = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
+  /** Start API server */
+  const host = process.env.HOST ? String(process.env.HOST) : "localhost";
+  const port = process.env.PORT ? parseInt(process.env.PORT) : 3001;
+  const server = fastify();
+  await server.register(cors, { origin: true });
+  server.get("/", async (request, reply) => {
+    reply.send({ status: "OK" });
   });
-  userInterface.prompt();
-  userInterface
-    .on("line", async (text) => {
-      if (text === "exit") {
-        userInterface.close();
-        return;
-      }
-      const response = await model.invoke([
-        initSystemMessage,
-        new HumanMessage(text),
-      ]);
-      await processResponse(response);
-      userInterface.prompt();
-    })
-    .on("close", () => {
-      console.log("Bye!");
-      process.exit(0);
+  server.post<{ Body: { text: string } }>("/chat", async (request, reply) => {
+    const { text } = request.body;
+    const aiResponse = await model.invoke([
+      initSystemMessage,
+      new HumanMessage(text),
+    ]);
+    const result = await processResponse(aiResponse);
+    reply.send({
+      status: "OK",
+      text: result,
     });
+  });
+  server.listen({ host, port }, (err, address) => {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+    console.log(`Server listening at ${address}`);
+  });
 }
 
 (async () => {

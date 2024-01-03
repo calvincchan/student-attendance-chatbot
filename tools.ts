@@ -104,14 +104,18 @@ export async function findAttendance(args: {
     });
   }
   if (args.studentName) {
-    const res = await findStudentByNameAndHomeroom(
-      args.studentName,
-      args.homeroom
-    );
-    if (res) {
-      query.andWhere("attendance.student_id = :student_id", {
-        student_id: res.id,
-      });
+    try {
+      const student = await findStudentByNameAndHomeroom(
+        args.studentName,
+        args.homeroom
+      );
+      if (student) {
+        query.andWhere("attendance.student_id = :student_id", {
+          student_id: student.id,
+        });
+      }
+    } catch (e) {
+      return e.message;
     }
   }
   if (args.homeroom) {
@@ -147,9 +151,17 @@ export async function findAttendance(args: {
   ];
   /** for each row, display the columns in the order of headers */
   if (rows.length > 0) {
-    console.table(rows, headers);
+    return rows
+      .map((row) => {
+        return row.Attendance_present
+          ? `- ${row.Student_name} was present on ${row.Attendance_date}.`
+          : `- ${row.Student_name} was absent on ${
+              row.Attendance_date
+            } with reason "${row.Attendance_reason || "N/A"}".`;
+      })
+      .join("\n");
   } else {
-    console.log("No attendance records found.");
+    return "No attendance records found.";
   }
 }
 
@@ -166,9 +178,7 @@ export async function setAllPresentByHomeroom(args: {
   WHERE student.homeroom = :homeroom;`,
     [date, homeroom]
   );
-  console.log(
-    `Marked all students in homeroom ${homeroom} as present on ${date}`
-  );
+  return `Marked all students in homeroom ${homeroom} as present on ${date}`;
 }
 
 /** Set a single attendance record */
@@ -180,17 +190,16 @@ export async function setAttendance(args: {
   reason: string;
 }) {
   const { name, homeroom, date, present, reason } = args;
-  const student = await findStudentByNameAndHomeroom(name, homeroom);
-  if (!student) {
-    return;
+  let student: Student;
+  try {
+    student = await findStudentByNameAndHomeroom(name, homeroom);
+  } catch (e) {
+    return e.message;
   }
   const res = await AppDataSource.manager.query(
     `INSERT OR REPLACE INTO attendance (student_id, date, homeroom, present, reason)
   VALUES (:studentId, :date, :homeroom, :present, :reason);`,
     [student.id, date, student.homeroom, present, reason]
   );
-  // console.log("🚀 ~ file: tools.ts:176 ~ res:", res);
-  console.log(
-    `Set attendance for student ${student.id} on ${date} to ${present} with reason ${reason}`
-  );
+  return `Set attendance for student ${student.id} on ${date} to ${present} with reason ${reason}`;
 }

@@ -1,0 +1,12 @@
+@BASE_URL=http://localhost:3001
+
+### Chat
+POST {{BASE_URL}}/chat
+Content-Type: application/json
+
+{
+  "text": "everyone is here today"
+}
+
+### Status
+GET {{BASE_URL}}/
