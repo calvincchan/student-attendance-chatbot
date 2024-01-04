@@ -7,7 +7,13 @@ services:
     container_name: chatbot-api
     environment:
       HOST: api
-      PORT: ${PORT}
+      PORT: 3001
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     ports:
-      - ${PORT}:${PORT}
+      - 3001:3001
+  web:
+    build:
+      dockerfile: ./frontend/dockerfile
+    container_name: chatbot-frontend
+    ports:
+      - 8080:80
