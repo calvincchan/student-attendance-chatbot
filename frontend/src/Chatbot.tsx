@@ -18,9 +18,9 @@ const Chatbot = () => {
     });
     const { data } = res;
     if (data?.status === "OK") {
-      return data.result;
+      return "🤖" + data.result;
     } else {
-      return "Sorry, I don't understand.";
+      return "🤖💔 Sorry, I don't understand.";
     }
   };
 

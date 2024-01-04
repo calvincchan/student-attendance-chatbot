@@ -17,8 +17,7 @@ async function processResponse(response: BaseMessage) {
   // console.log(JSON.stringify(response, null, 2));
   const result: string[] = [];
   if (response.content) {
-    console.log("✨", response.content);
-    return;
+    return "" + response.content;
   }
   if (response.additional_kwargs?.tool_calls) {
     const toolCalls = response.additional_kwargs.tool_calls;
@@ -48,7 +47,7 @@ async function processResponse(response: BaseMessage) {
         })
       );
     }
-    return result;
+    return result.join("\n");
   }
 }
 
@@ -100,7 +99,7 @@ export default async function main() {
     const result = await processResponse(aiResponse);
     reply.send({
       status: "OK",
-      text: result,
+      result,
     });
   });
   server.listen({ host, port }, (err, address) => {
