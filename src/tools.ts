@@ -73,15 +73,13 @@ async function findStudentByNameAndHomeroom(name: string, homeroom: string) {
   const res = await query.getMany();
   if (res) {
     if (res.length > 1) {
-      console.log(
+      throw Error(
         `Found multiple students with name ${name}. Please be more specific.`
       );
-      return null;
     }
     return res[0];
   }
-  console.log(`Cannot find student with name ${name}`);
-  return null;
+  throw Error(`Cannot find student with name ${name}`);
 }
 
 /** Get a list of students with optional filters */
