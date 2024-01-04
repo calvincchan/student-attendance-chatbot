@@ -1,0 +1,13 @@
+name: student-attendance-chatbot
+version: "1.0.0"
+services:
+  api:
+    build:
+      dockerfile: ./dockerfile
+    container_name: chatbot-api
+    environment:
+      HOST: api
+      PORT: ${PORT}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    ports:
+      - ${PORT}:${PORT}
