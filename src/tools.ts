@@ -76,10 +76,14 @@ async function findStudentByNameAndHomeroom(name: string, homeroom: string) {
       throw Error(
         `Found multiple students with name ${name}. Please be more specific.`
       );
+    } else if (res.length === 1) {
+      return res[0];
+    } else {
+      throw Error(`Cannot find student with name ${name}`);
     }
-    return res[0];
+  } else {
+    throw Error(`Error finding student with name ${name}`);
   }
-  throw Error(`Cannot find student with name ${name}`);
 }
 
 /** Get a list of students with optional filters */

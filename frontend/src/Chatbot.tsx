@@ -18,9 +18,9 @@ const Chatbot = () => {
     });
     const { data } = res;
     if (data?.status === "OK") {
-      return "🤖" + data.result;
+      return data.result.toString();
     } else {
-      return "🤖💔 Sorry, I don't understand.";
+      return "Sorry, I don't understand.";
     }
   };
 
@@ -48,9 +48,25 @@ const Chatbot = () => {
     firstMessage();
   }, []);
 
+  const firstMessage = `
+  ## Welcome to the chatbot!
+  You can test the chatbot with the following messages:
+  - Hello, What's the default homeroom and today's date?
+  - Everyone is here today, except Mason is sick.
+  - Show the records for December 2023.
+  - Show the records for this month.
+  - 今天所有人都出席。
+  - 今天所有人都出席，除了 Mason 生病了。
+  - 顯示 2023 年 12 月的記錄。
+  - 顯示這個月的記錄。
+`;
+
   return (
     <div className="chatbot-container">
       <div className="chatbot-messages">
+        <div className="message ai-message">
+          <Markdown>{firstMessage}</Markdown>
+        </div>
         {messages.map((message, index) => (
           <div
             key={index}
