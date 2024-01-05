@@ -1,0 +1,29 @@
+{
+  "$schema": "https://codesandbox.io/schemas/tasks.json",
+
+  // These tasks will run in order when initializing your CodeSandbox project.
+  "setupTasks": [
+    {
+      "name": "Server: Install Dependencies",
+      "command": "yarn install"
+    },
+    {
+      "name": "Client: Build production",
+      "command":"cd client/ && yarn install && yarn build"
+    }
+  ],
+
+  // These tasks can be run from CodeSandbox. Running one will open a log in the app.
+  "tasks": {
+    "start": {
+      "name": "start",
+      "command": "yarn start",
+      "runAtStart": true
+    },
+    "serve client": {
+      "name": "serve client",
+      "command": "cd client/ && yarn preview --host",
+      "runAtStart": true
+    }
+  }
+}
