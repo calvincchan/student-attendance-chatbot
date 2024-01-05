@@ -1,8 +1,10 @@
-import cors from "@fastify/cors";
+import fastifyStatic from "@fastify/static";
 import * as dayjs from "dayjs";
 import "dotenv/config";
+import fastify from "fastify";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { BaseMessage, HumanMessage, SystemMessage } from "langchain/schema";
+import * as path from "path";
 import { seedData } from "./seed-data";
 import {
   ToolSchema,
@@ -10,7 +12,6 @@ import {
   setAllPresentByHomeroom,
   setAttendance,
 } from "./tools";
-import fastify = require("fastify");
 
 /** Process response from OpenAI, either print the response or call a tool. */
 async function processResponse(response: BaseMessage) {
@@ -86,8 +87,15 @@ export default async function main() {
   const host = process.env.HOST ? String(process.env.HOST) : "localhost";
   const port = process.env.PORT ? parseInt(process.env.PORT) : 3001;
   const server = fastify();
-  await server.register(cors, { origin: true });
-  server.get("/", async (request, reply) => {
+  /** Serve static frontend code in frontend/dist */
+  const staticPath = path.join(__dirname, "../frontend/dist");
+  console.log("🚀 ~ file: index.ts:95 ~ main ~ staticPath:", staticPath);
+  await server.register(fastifyStatic, {
+    root: staticPath,
+    prefix: "/",
+  });
+  /** API routes */
+  server.get("/health", async (request, reply) => {
     reply.send({ status: "OK" });
   });
   server.post<{ Body: { text: string } }>("/chat", async (request, reply) => {

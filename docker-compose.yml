@@ -11,9 +11,3 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     ports:
       - 3001:3001
-  web:
-    build:
-      dockerfile: ./frontend/dockerfile
-    container_name: chatbot-frontend
-    ports:
-      - 4173:4173

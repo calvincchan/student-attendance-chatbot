@@ -8,16 +8,12 @@ interface IMessage {
   user: boolean;
 }
 
-/** Dynamic base-url for CodeSandbox */
-const baseUrl =
-  window.location.protocol + "//" + window.location.hostname + ":3001";
-
 const Chatbot = () => {
   const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<IMessage[]>([]);
 
   const chatWithGPT = async (userInput: string) => {
-    const res = await axios.post(baseUrl + "/chat", {
+    const res = await axios.post("/chat", {
       text: userInput,
     });
     const { data } = res;
