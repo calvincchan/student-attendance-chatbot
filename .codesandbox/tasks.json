@@ -17,13 +17,14 @@
   "tasks": {
     "start": {
       "name": "start",
-      "command": "yarn start",
-      "runAtStart": true
+      "command": "yarn start"
     },
     "serve client": {
       "name": "serve client",
       "command": "cd frontend/ && yarn preview --host",
-      "runAtStart": true
+      "preview": {
+        "port": 4173
+      }
     }
   }
 }
