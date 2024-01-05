@@ -16,4 +16,4 @@ services:
       dockerfile: ./frontend/dockerfile
     container_name: chatbot-frontend
     ports:
-      - 8080:4173
+      - 4173:4173

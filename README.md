@@ -2,11 +2,11 @@
 
 Exploring the possibilities to build an attendance taking tool with OpenAI.
 
-## Run
+## Run locally with Docker Compose
 
-1. yarn install
-2. Either create a .env file or directly set a environment variable OPENAI_API_KEY.
-3. yarn start
+1. add OPENAI_API_KEY to env variable or ".env" file.
+2. `docker-compose up`
+3. Open http://localhost:4173 in local browser.
 
 Thanks,
 Calvin C. Chan
