@@ -9,7 +9,7 @@
     },
     {
       "name": "Client: Build production",
-      "command":"cd frontend/ && yarn install && yarn build"
+      "command": "cd frontend/ && yarn install && yarn build"
     }
   ],
 
@@ -18,14 +18,9 @@
     "start": {
       "name": "start",
       "command": "yarn start",
-      "runAtStart": true
-    },
-    "serve client": {
-      "name": "serve client",
-      "command": "cd frontend/ && yarn preview --host",
       "runAtStart": true,
       "preview": {
-        "port": 4173
+        "port": 3001
       }
     }
   }
