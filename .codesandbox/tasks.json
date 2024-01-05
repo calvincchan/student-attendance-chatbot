@@ -9,7 +9,7 @@
     },
     {
       "name": "Client: Build production",
-      "command":"cd client/ && yarn install && yarn build"
+      "command":"cd frontend/ && yarn install && yarn build"
     }
   ],
 
@@ -22,7 +22,7 @@
     },
     "serve client": {
       "name": "serve client",
-      "command": "cd client/ && yarn preview --host",
+      "command": "cd frontend/ && yarn preview --host",
       "runAtStart": true
     }
   }
